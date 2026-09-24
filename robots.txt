@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /staff/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password

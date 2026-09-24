@@ -39,7 +39,97 @@
   }
 
   /* ---------------------------------------------------------------------
-     2. Lightbox
+     2. Mobile navigation
+     --------------------------------------------------------------------- */
+  function initNav() {
+    var toggle = document.querySelector("[data-nav-toggle]");
+    var menu = document.querySelector("[data-mobile-nav]");
+    if (!toggle || !menu) return;
+
+    function setOpen(open) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) {
+        menu.removeAttribute("hidden");
+      } else {
+        menu.setAttribute("hidden", "");
+      }
+      document.body.classList.toggle("is-locked", open);
+    }
+
+    function isOpen() {
+      return toggle.getAttribute("aria-expanded") === "true";
+    }
+
+    toggle.addEventListener("click", function () {
+      setOpen(!isOpen());
+    });
+
+    menu.addEventListener("click", function (event) {
+      if (event.target.closest("a")) setOpen(false);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    window.addEventListener("resize", function () {
+      if (window.matchMedia("(min-width: 64rem)").matches && isOpen()) {
+        setOpen(false);
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------------
+     3. Contact form — static site, so hand the message to the mail client
+     --------------------------------------------------------------------- */
+  function initContactForm() {
+    var form = document.querySelector("[data-contact-form]");
+    if (!form) return;
+
+    var status = form.querySelector("[data-form-status]");
+    var office = "info@dis.ac.tz";
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      /* Honeypot: bots fill the hidden field, humans never see it. */
+      var trap = form.querySelector('input[name="website"]');
+      if (trap && trap.value) {
+        if (status) status.textContent = "Thank you — your message has been sent.";
+        form.reset();
+        return;
+      }
+
+      var data = new FormData(form);
+      var name = (data.get("name") || "").toString().trim();
+      var email = (data.get("email") || "").toString().trim();
+      var phone = (data.get("phone") || "").toString().trim();
+      var subject = (data.get("subject") || "").toString().trim() || "Website enquiry";
+      var message = (data.get("message") || "").toString().trim();
+
+      var body =
+        "Name: " + name + "\n" +
+        "Email: " + email + "\n" +
+        (phone ? "Phone: " + phone + "\n" : "") +
+        "\n" + message;
+
+      window.location.href =
+        "mailto:" + office +
+        "?subject=" + encodeURIComponent("[DIS website] " + subject) +
+        "&body=" + encodeURIComponent(body);
+
+      if (status) {
+        status.textContent =
+          "Your mail app is opening with the message ready to send to " + office + ".";
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------------
+     4. Lightbox
      --------------------------------------------------------------------- */
   function initLightbox() {
     var root = document.querySelector("[data-lightbox-root]");
@@ -170,6 +260,8 @@
 
   function init() {
     initReveals();
+    initNav();
+    initContactForm();
     initLightbox();
   }
 
